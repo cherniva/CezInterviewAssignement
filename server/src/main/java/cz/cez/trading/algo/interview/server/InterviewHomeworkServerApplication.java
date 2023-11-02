@@ -11,12 +11,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jms.artemis.ArtemisConfigurationCustomizer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.jms.dsl.Jms;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@ComponentScan(basePackages = {"cz.cez.trading.algo.interview.server", "cz.cez.trading.algo.interview.shared"})
 @SpringBootApplication
 public class InterviewHomeworkServerApplication {
 	private static final Logger LOG = LoggerFactory.getLogger(InterviewHomeworkServerApplication.class);
