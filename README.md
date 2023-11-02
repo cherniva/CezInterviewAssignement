@@ -1,0 +1,9 @@
+# ČEZ algo trading team interview assignment
+
+Create an application, preferably in Java or other JVM language, that will connect to JMS queue and receive messages regarding trading orders on the market. Accumulate incoming streaming data and track state of the orders and implement internal function for querying that state.
+
+JMS Broker simulating the market traffic is provided in directory `server` as a Spring Boot application. When this application is started it starts JMS Broker and then it starts producing random market updates in queue `cez.trading.algo.interview`. The updates are text messages containing JSON that can be deserialized to classes provided in directory `shared` as a Java library, read it's Javadoc for more details. The broker listens at localhost at port 61616, user: "user", password: "secret".
+
+The core of the assignment is to program an implementation of interface `Orderbook` from the `shared` Java library. The solution may be shared in any way, but GitHub repository is preferred. The evaluation of the solution will have a form of discussion about provided solution, it's design and architecture choices. Additional information may be requested by applicant in any form, again GitHub issues, discussions or pull requests are preffered. The solution may be unfinished if it contains large portions of required code and is not working due to some technical difficulties. The most valued topics of the solution are performance optimisations and paralelization designs. The choice of technology and architecture is not restricted but it's explanation and analysis is part of the evaluation discussion.
+
+Note that it's possible to use provided `server` code as a guide to set up scaffolding for the result project.
