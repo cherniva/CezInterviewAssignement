@@ -2,18 +2,18 @@ package cz.cez.trading.algo.interview.shared;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.TreeMap;
 import java.util.stream.Stream;
 
 public class OrderbookImpl implements Orderbook {
 
-    //TODO: add querying tools to add, delete and update order (add and update could be the same function)
+    //TODO: tests
+
+    //TODO: add querying for middle price, best price, volume, spread
 
     //TODO: synchronization
 
     private HashMap<String, HashMap<Side, OrderTree>> orderBook;
     private HashMap<String, Order> ordersMap;
-
 
     public OrderbookImpl() {
         this.orderBook = new HashMap<>();
