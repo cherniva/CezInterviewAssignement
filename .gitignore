@@ -5,6 +5,8 @@
 /src/test/javascript/coverage/
 /src/test/javascript/PhantomJS*/
 
+shared/src/main/java/cz/cez/trading/algo/interview/shared/TestMain.java
+
 ######################
 # Node
 ######################
