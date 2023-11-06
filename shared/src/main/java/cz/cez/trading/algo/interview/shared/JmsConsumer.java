@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Map;
 
-@Component
+//@Component
 public class JmsConsumer implements MessageListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(JmsConsumer.class);
