@@ -2,6 +2,13 @@ package cz.cez.trading.algo.interview.shared;
 
 import org.junit.jupiter.api.BeforeAll;
 
+import java.util.*;
+import java.util.stream.Stream;
+
+import static cz.cez.trading.algo.interview.shared.Operation.SET;
+import static cz.cez.trading.algo.interview.shared.Side.BID;
+import static cz.cez.trading.algo.interview.shared.Side.ASK;
+import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 class OrderbookImplTest {
@@ -9,10 +16,18 @@ class OrderbookImplTest {
     private static final String[] PRODUCTS = new String[] {"ttf-jan-2023", "ttf-feb-2023", "ttf-mar-2023", "ttf-apr-2023"};
     private static final double[] BID_PRICES = new double[] {99.9, 99.925, 99.95, 99.975};
     private static final double[] ASK_PRICES = new double[] {100, 100.025, 100.05, 100.075, 100.1};
-    private final Map<String, Order> orders;
-    private final Random random;
+    private static Map<String, Order> orders;
+    private static Random random;
 
     OrderbookImpl orderBook;
+
+    private double[] getPrices(Side side) {
+        switch (side) {
+            case BID: return BID_PRICES;
+            case ASK: return ASK_PRICES;
+            default: throw new RuntimeException();
+        }
+    }
 
     public Order doRandomChange() {
         final int size = this.orders.size();
@@ -48,7 +63,7 @@ class OrderbookImplTest {
     private Order deleteRandom() {
         final Order order = this.orders.get(this.randomKey());
         final Order result = new Order(order);
-        result.setOperation(DELETE);
+        result.setOperation(Operation.DELETE);
         this.orders.remove(order.getId());
         return result;
     }
@@ -84,10 +99,10 @@ class OrderbookImplTest {
         return order;
     }
 
-    @BeforeAll
-    void testStructuresInit() {
-        this.orders = new HashMap<>();
-        this.random = new Random(123456);
+    @org.junit.jupiter.api.BeforeAll
+    static void testStructuresInit() {
+        orders = new HashMap<>();
+        random = new Random(123456);
     }
 
     @org.junit.jupiter.api.BeforeEach
@@ -105,73 +120,76 @@ class OrderbookImplTest {
                 side,
                 10,
                 100,
-                Operation.SET);
+                SET);
         orderBook.processOrder(order);
 
         Stream<Order> bestOrdersStream = orderBook.getBestOrdersFor(product, side);
-        Order[] bestOrdersArray = bestOrdersStream.toArray();
+        Order[] bestOrdersArray = bestOrdersStream.toArray(Order[]::new);
 
-        AssertEquals(1, bestOrdersArray.length);
-        AssertEquals(100, bestOrdersArray[0].getPrice());
-        AssertEquals(product, bestOrdersArray[0].getProduct());
+        assertEquals(1, bestOrdersArray.length);
+        assertEquals(100, bestOrdersArray[0].getPrice());
+        assertEquals(product, bestOrdersArray[0].getProduct());
 
     }
 
     @org.junit.jupiter.api.Test
     void orderbookTestSetMultipleOrders() {
-        int numOrders = 10;
+        int numOrders = 100;
         Order[] orders = new Order[numOrders];
         String product = "ttf-jan-2023";
-        int bestPriceBid = 0;
-        int bestPriceAsk = 200;
+        double bestPriceBid = 0;
+        double bestPriceAsk = 200;
         int bestBidsCnt = 0;
         int bestAsksCnt = 0;
         for(int i = 0; i < numOrders; i++) {
             Order newOrder = createRandom(product);
             switch(newOrder.getSide()) {
                 case ASK:
-                    if(newOrder.getPrice < bestPriceAsk) {
+                    if(newOrder.getPrice() < bestPriceAsk) {
                         bestPriceAsk = newOrder.getPrice();
-                        bestAsksCnt++;
+                        bestAsksCnt = 1;
                     }
                     else if(newOrder.getPrice() == bestPriceAsk) {
                         bestAsksCnt++;
                     }
+                    break;
                 case BID:
-                    if(newOrder.getPrice > bestPriceBid) {
+                    if(newOrder.getPrice() > bestPriceBid) {
                         bestPriceBid = newOrder.getPrice();
-                        bestBidsCnt++;
+                        bestBidsCnt = 1;
                     }
                     else if(newOrder.getPrice() == bestPriceBid) {
                         bestBidsCnt++;
                     }
+                    break;
             }
             orders[i] = newOrder;
             orderBook.processOrder(newOrder);
         }
 
         Stream<Order> bestOrdersAskStream = orderBook.getBestOrdersFor(product, Side.ASK);
-        Stream<Order> bestOrdersBidStream = orderBook.getBestOrdersFor(product, Side.BID);
-        Order[] bestOrdersAskArray = bestOrdersAskStream.toArray();
-        Order[] bestOrdersBidArray = bestOrdersBidStream.toArray();
+        Stream<Order> bestOrdersBidStream = orderBook.getBestOrdersFor(product, BID);
+        Order[] bestOrdersAskArray = bestOrdersAskStream.toArray(Order[]::new);
+        Order[] bestOrdersBidArray = bestOrdersBidStream.toArray(Order[]::new);
 
 
-        AssertEquals(bestPriceAsk, bestOrdersAskArray[0].getPrice());
-        AssertEquals(bestPriceBid, bestOrdersBidArray[0].getPrice());
+        assertEquals(bestPriceAsk, bestOrdersAskArray[0].getPrice());
+        assertEquals(bestPriceBid, bestOrdersBidArray[0].getPrice());
 
-        AssertEquals(bestAsksCnt, bestOrdersAskArray.length);
-        AssertEquals(bestBidsCnt, bestOrdersBidArray.length);
+        assertEquals(bestAsksCnt, bestOrdersAskArray.length);
+        assertEquals(bestBidsCnt, bestOrdersBidArray.length);
     }
 
     @org.junit.jupiter.api.Test
     void orderbookTestDeleteOneOrder() {
-        Order order = createRandom();
-        orderBook.processOrder(order);
-        order.setOperation(Operation.DELETE);
-        orderBook.processOrder(order);
+        Order order1 = createRandom();
+        Order order2 = createRandom();
+        orderBook.processOrder(order1);
+        orderBook.processOrder(order2);
+        order1.setOperation(Operation.DELETE);
+        orderBook.processOrder(order1);
 
-        Stream<Order> bestOrdersStream = orderBook.getBestOrdersFor(order.getProduct(), order.getSide());
-        AssertEquals(null, bestOrdersStream); // TODO: does TreeMap return null if empty?
+        assertThrows(NoSuchElementException.class, () -> orderBook.getBestOrdersFor(order1.getProduct(), order1.getSide()));
     }
 
     @org.junit.jupiter.api.Test
@@ -188,8 +206,7 @@ class OrderbookImplTest {
         });
 
         for(Order order : orders) {
-            Stream<Order> bestOrdersStream = orderBook.getBestOrdersFor(order.getProduct(), order.getSide());
-            AssertEquals(null, bestOrdersStream);
+            assertThrows(NoSuchElementException.class, () -> orderBook.getBestOrdersFor(order.getProduct(), order.getSide()));
         }
     }
 }
