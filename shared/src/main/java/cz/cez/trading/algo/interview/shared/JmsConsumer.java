@@ -12,18 +12,15 @@ import javax.jms.MessageListener;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.Map;
-
-//@Component
 public class JmsConsumer implements MessageListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(JmsConsumer.class);
 
-    private final ObjectMapper objectMapper;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    public JmsConsumer(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
+    @Autowired
+    private Orderbook orderbook;
 
     @Override
     @JmsListener(destination = "cez.trading.algo.interview")
@@ -32,19 +29,17 @@ public class JmsConsumer implements MessageListener {
             ActiveMQTextMessage activeMQTextMessage = (ActiveMQTextMessage)message;
 
             String json = activeMQTextMessage.getText();
-            LOG.info("Received Message: " + json);
+            LOG.info("Thread #{}, Received Message: {}", Thread.currentThread().getId(), json);
 
             //Serialize to object
             Order order = objectMapper.readValue(json, Order.class);
             LOG.info(order.toString());
+
+            orderbook.processOrder(order);
 
         } catch(Exception e) {
             LOG.error("Received Exception : " + e);
         }
     }
 
-//    @JmsListener(destination = "cez.trading.algo.interview", containerFactory = "activeMQConnectionFactory")
-//    public void receiveMessage(Order order) {
-//        System.out.println("Received <" + order + ">");
-//    }
 }
