@@ -19,4 +19,6 @@ public interface Orderbook {
 	 * @see Order
 	 */
 	Stream<Order> getBestOrdersFor(String product, Side side);
+
+	void processOrder(Order order);
 }
