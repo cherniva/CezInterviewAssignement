@@ -15,16 +15,16 @@ public class OrderbookImpl implements Orderbook {
 
     //TODO: synchronization
 
-    private HashMap<String, HashMap<Side, OrderTree>> orderBook;
+    private HashMap<String, HashMap<Side, PriceOrderMap>> orderBook;
     private HashMap<String, Order> ordersMap;
 
     public OrderbookImpl() {
         this.orderBook = new HashMap<>();
         List.of("ttf-jan-2023", "ttf-feb-2023", "ttf-mar-2023", "ttf-apr-2023")
                 .forEach(s -> {
-                    HashMap<Side, OrderTree> askBidMap = new HashMap<>();
-                    askBidMap.put(Side.ASK, new OrderTree(Side.ASK));
-                    askBidMap.put(Side.BID, new OrderTree(Side.BID));
+                    HashMap<Side, PriceOrderMap> askBidMap = new HashMap<>();
+                    askBidMap.put(Side.ASK, new PriceOrderMap(Side.ASK));
+                    askBidMap.put(Side.BID, new PriceOrderMap(Side.BID));
                     orderBook.put(s, askBidMap);
                 });
         this.ordersMap = new HashMap<>();
@@ -41,21 +41,21 @@ public class OrderbookImpl implements Orderbook {
         try {
             Order existingOrder = ordersMap.get(order.getId());
             if(existingOrder.getPrice() != order.getPrice()) {
-                OrderTree orderTree = orderBook.get(order.getProduct()).get(order.getSide());
-                orderTree.remove(existingOrder);
+                PriceOrderMap priceOrderMap = orderBook.get(order.getProduct()).get(order.getSide());
+                priceOrderMap.remove(existingOrder);
                 existingOrder.setPrice(order.getPrice());
-                orderTree.insert(existingOrder);
+                priceOrderMap.insert(existingOrder);
             }
         }
         catch (NullPointerException e) {
             ordersMap.put(order.getId(), order);
-            OrderTree orderTree = orderBook.get(order.getProduct()).get(order.getSide());
+            PriceOrderMap orderTree = orderBook.get(order.getProduct()).get(order.getSide());
             orderTree.insert(order);
         }
     }
 
     private void deleteOrder(Order order) {
-        OrderTree orderTree = orderBook.get(order.getProduct()).get(order.getSide());
+        PriceOrderMap orderTree = orderBook.get(order.getProduct()).get(order.getSide());
         orderTree.remove(order);
         ordersMap.remove(order.getId());
     }
