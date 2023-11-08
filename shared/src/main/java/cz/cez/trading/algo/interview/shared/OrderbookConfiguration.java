@@ -20,7 +20,7 @@ public class OrderbookConfiguration {
     }
 
     @Bean
-    public Orderbook orderbook() {
+    public OrderbookImpl orderbook() {
         return new OrderbookImpl();
     }
 

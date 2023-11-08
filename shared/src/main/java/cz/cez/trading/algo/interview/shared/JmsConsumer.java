@@ -3,7 +3,6 @@ package cz.cez.trading.algo.interview.shared;
 import org.apache.activemq.artemis.jms.client.ActiveMQTextMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
-import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +19,7 @@ public class JmsConsumer implements MessageListener {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private Orderbook orderbook;
+    private OrderbookImpl orderbook;
 
     @Override
     @JmsListener(destination = "cez.trading.algo.interview")
@@ -35,8 +34,8 @@ public class JmsConsumer implements MessageListener {
             Order order = objectMapper.readValue(json, Order.class);
             LOG.info(order.toString());
 
-            OrderbookImpl orderbookImpl = (OrderbookImpl) orderbook;
-            orderbookImpl.processOrder(order);
+//            OrderbookImpl orderbookImpl = (OrderbookImpl) orderbook;
+            orderbook.processOrder(order);
 
         } catch(Exception e) {
             LOG.error("Received Exception : " + e);
