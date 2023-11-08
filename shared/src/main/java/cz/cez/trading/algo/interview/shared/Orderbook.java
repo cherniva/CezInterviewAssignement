@@ -20,5 +20,5 @@ public interface Orderbook {
 	 */
 	Stream<Order> getBestOrdersFor(String product, Side side);
 
-	void processOrder(Order order);
+//	void processOrder(Order order);
 }

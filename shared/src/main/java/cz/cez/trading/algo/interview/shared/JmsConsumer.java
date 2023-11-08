@@ -35,7 +35,8 @@ public class JmsConsumer implements MessageListener {
             Order order = objectMapper.readValue(json, Order.class);
             LOG.info(order.toString());
 
-            orderbook.processOrder(order);
+            OrderbookImpl orderbookImpl = (OrderbookImpl) orderbook;
+            orderbookImpl.processOrder(order);
 
         } catch(Exception e) {
             LOG.error("Received Exception : " + e);
