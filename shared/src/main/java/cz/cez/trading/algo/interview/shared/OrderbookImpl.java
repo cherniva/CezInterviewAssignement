@@ -1,5 +1,8 @@
 package cz.cez.trading.algo.interview.shared;
 
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
@@ -27,6 +30,7 @@ public class OrderbookImpl implements Orderbook {
         this.ordersMap = new HashMap<>();
     }
 
+    @Override
     public void processOrder(Order order) {
         switch(order.getOperation()) {
             case SET -> setOrder(order);
@@ -58,6 +62,7 @@ public class OrderbookImpl implements Orderbook {
     }
 
     @Override
+    @Async
     public Stream<Order> getBestOrdersFor(String product, Side side) {
         return orderBook.get(product).get(side).getRoot().values().stream();
     }
