@@ -11,9 +11,9 @@ public class OrderbookImpl implements Orderbook {
 
     //TODO: tests
 
-    //TODO: add querying for middle price, best price, volume, spread
+    //TODO: synchronization test
 
-    //TODO: synchronization
+    //TODO: add querying for middle price, best price, volume, spread
 
     private HashMap<String, HashMap<Side, PriceOrderMap>> orderBook;
     private HashMap<String, Order> ordersMap;

@@ -6,6 +6,7 @@
 /src/test/javascript/PhantomJS*/
 
 shared/src/main/java/cz/cez/trading/algo/interview/shared/TestMain.java
+shared/src/main/java/cz/cez/trading/algo/interview/shared/Client.java
 
 ######################
 # Node
