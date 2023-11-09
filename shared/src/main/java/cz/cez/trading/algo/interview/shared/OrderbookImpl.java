@@ -1,12 +1,18 @@
 package cz.cez.trading.algo.interview.shared;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
+@Component
 public class OrderbookImpl implements Orderbook {
 
     //TODO: tests
@@ -14,6 +20,8 @@ public class OrderbookImpl implements Orderbook {
     //TODO: synchronization test
 
     //TODO: add querying for middle price, best price, volume, spread
+
+    private static final Logger LOG = LoggerFactory.getLogger(OrderbookImpl.class);
 
     private HashMap<String, HashMap<Side, PriceOrderMap>> orderBook;
     private HashMap<String, Order> ordersMap;
@@ -61,8 +69,19 @@ public class OrderbookImpl implements Orderbook {
     }
 
     @Override
-    @Async
     public Stream<Order> getBestOrdersFor(String product, Side side) {
         return orderBook.get(product).get(side).getRoot().values().stream();
+    }
+
+
+    @Async
+    public CompletableFuture<Stream<Order>> getBestOrdersForAsync(String product, Side side, int delay) {
+        try {
+            Thread.sleep(delay);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        LOG.info("Getting orders for {} {}", product, side);
+        return CompletableFuture.completedFuture(getBestOrdersFor(product, side));
     }
 }
