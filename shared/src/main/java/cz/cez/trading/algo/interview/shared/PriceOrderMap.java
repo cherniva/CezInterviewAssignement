@@ -2,7 +2,7 @@ package cz.cez.trading.algo.interview.shared;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.TreeMap;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 public class PriceOrderMap {
@@ -27,7 +27,12 @@ public class PriceOrderMap {
     }
 
     public HashMap<String, Order> getRoot() {
-        return priceOrdersSortedMap.get(priceOrdersSortedMap.firstKey());
+        try {
+            return priceOrdersSortedMap.get(priceOrdersSortedMap.firstKey());
+        }
+        catch(NoSuchElementException e) {
+            return new HashMap<>();
+        }
     }
 
     public Order remove(Order order) {
