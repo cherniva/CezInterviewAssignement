@@ -10,6 +10,7 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.scheduling.annotation.Async;
 
 public class JmsConsumer implements MessageListener {
 
@@ -22,17 +23,17 @@ public class JmsConsumer implements MessageListener {
     private OrderbookImpl orderbook;
 
     @Override
-    @JmsListener(destination = "cez.trading.algo.interview")
+    @JmsListener(destination = "cez.trading.algo.interview", containerFactory = "jmsTradingFactory")
     public void onMessage(Message message) {
         try{
             ActiveMQTextMessage activeMQTextMessage = (ActiveMQTextMessage)message;
 
             String json = activeMQTextMessage.getText();
-            LOG.info("Thread #{}, Received Message: {}", Thread.currentThread().getId(), json);
+//            LOG.info("Thread #{}, Received Message: {}", Thread.currentThread().getId(), json);
 
             //Serialize to object
             Order order = objectMapper.readValue(json, Order.class);
-            LOG.info(order.toString());
+//            LOG.info(order.toString());
 
 //            OrderbookImpl orderbookImpl = (OrderbookImpl) orderbook;
             orderbook.processOrder(order);
