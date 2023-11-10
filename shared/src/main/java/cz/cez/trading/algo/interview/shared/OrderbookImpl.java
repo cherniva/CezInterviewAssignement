@@ -75,12 +75,7 @@ public class OrderbookImpl implements Orderbook {
 
 
     @Async
-    public CompletableFuture<Stream<Order>> getBestOrdersForAsync(String product, Side side, int delay) {
-        try {
-            Thread.sleep(delay);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    public CompletableFuture<Stream<Order>> getBestOrdersForAsync(String product, Side side) {
         LOG.info("Getting orders for {} {}", product, side);
         return CompletableFuture.completedFuture(getBestOrdersFor(product, side));
     }

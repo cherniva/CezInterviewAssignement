@@ -18,6 +18,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.jms.ConnectionFactory;
+import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
@@ -32,14 +33,14 @@ public class OrderbookConfiguration {
 
     private static final Logger LOG = LoggerFactory.getLogger(OrderbookConfiguration.class);
 
-    private static final String[] PRODUCTS = new String[] {"ttf-jan-2023", "ttf-feb-2023", "ttf-mar-2023", "ttf-apr-2023"};
+    private static final String[] PRODUCTS = new String[]{"ttf-jan-2023", "ttf-feb-2023", "ttf-mar-2023", "ttf-apr-2023"};
 
     @Autowired
     private OrderbookImpl orderbook;
 
     @Bean
     public JmsConsumer jmsConsumer() {
-        return new JmsConsumer();
+        return new JmsConsumer(orderbook);
     }
 
 //    @Bean
@@ -64,7 +65,7 @@ public class OrderbookConfiguration {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         int availableProcessors = Runtime.getRuntime().availableProcessors();
         executor.setCorePoolSize(availableProcessors);
-//        executor.setMaxPoolSize(4); // use half of cores
+        executor.setMaxPoolSize(16); // use half of cores
         executor.setThreadNamePrefix("AsyncPool-");
         executor.initialize();
         return executor;
@@ -75,36 +76,45 @@ public class OrderbookConfiguration {
         return new CommandLineRunner() {
             public void run(String... args) throws Exception {
                 Random random = new Random();
-                try {
-                    CompletableFuture<Stream<Order>> order1 = orderbook.getBestOrdersForAsync(
-                            PRODUCTS[random.nextInt(0, 4)],
-                            random.nextInt() % 2 == 0 ? Side.ASK : Side.BID,
-                            random.nextInt(2000, 5000)
-                    );
-                    CompletableFuture<Stream<Order>> order2 = orderbook.getBestOrdersForAsync(
-                            PRODUCTS[random.nextInt(0, 4)],
-                            random.nextInt() % 2 == 0 ? Side.ASK : Side.BID,
-                            random.nextInt(2000, 5000)
-                    );
-                    CompletableFuture<Stream<Order>> order3 = orderbook.getBestOrdersForAsync(
-                            PRODUCTS[random.nextInt(0, 4)],
-                            random.nextInt() % 2 == 0 ? Side.ASK : Side.BID,
-                            random.nextInt(2000, 5000)
-                    );
+                while(true) {
+                    try {
+                        Thread.sleep(random.nextInt(100, 4000));
+                    } catch (InterruptedException e) {
+                        LOG.error("Interrupt Exception in CommandLineRunner");
+                    }
+//                    String product = PRODUCTS[random.nextInt(0, 4)];
+//                    Side side = random.nextInt() % 2 == 0 ? Side.ASK : Side.BID;
 
-                    CompletableFuture.allOf(order1, order2, order3).join();
+//                    Stream<Order> orders = orderbook.getBestOrdersFor(product, side);
+//                    LOG.info("Orders for {} {} have size: {}", product, side, Arrays.toString(orders.toArray()));
 
-                    LOG.info("--> " + order1.get().count());
-                    LOG.info("--> " + order2.get().count());
-                    LOG.info("--> " + order3.get().count());
-                }
-                catch(NoSuchElementException e) {
-                    LOG.error("NoSuchElementException");
+//                    CompletableFuture<Stream<Order>> orders = orderbook.getBestOrdersForAsync(product, side);
+//                    CompletableFuture.allOf(orders).join();
+//                    LOG.info("Orders for {} {} have size: {}", product, side, Arrays.toString(orders.get().toArray()));
+
+                    int randomNum = random.nextInt(3,15);
+                    CompletableFuture<Stream<Order>>[] orders = new CompletableFuture[randomNum];
+
+                    for(int i = 0; i < randomNum; i++) {
+                        try {
+                            Thread.sleep(random.nextInt(10, 2000));
+                        }
+                        catch(InterruptedException e) {
+                            LOG.error("Interrupt Exception in CommandLineRunner");
+                        }
+
+                        orders[i] = orderbook.getBestOrdersForAsync(
+                                PRODUCTS[random.nextInt(0, 4)],
+                                random.nextInt() % 2 == 0 ? Side.ASK : Side.BID
+                        );
+                    }
+                    CompletableFuture.allOf(orders).join();
+
+                    for(CompletableFuture<Stream<Order>> order : orders) {
+                        LOG.info("--> " + Arrays.toString(order.get().toArray()));
+                    }
                 }
             }
         };
     }
-
-//    @Bean
-//    @Scope("prototype")
 }
