@@ -19,8 +19,12 @@ public class JmsConsumer implements MessageListener {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
+//    @Autowired
     private OrderbookImpl orderbook;
+
+    public JmsConsumer(OrderbookImpl orderbook) {
+        this.orderbook = orderbook;
+    }
 
     @Override
     @JmsListener(destination = "cez.trading.algo.interview", containerFactory = "jmsTradingFactory")
@@ -29,13 +33,11 @@ public class JmsConsumer implements MessageListener {
             ActiveMQTextMessage activeMQTextMessage = (ActiveMQTextMessage)message;
 
             String json = activeMQTextMessage.getText();
-//            LOG.info("Thread #{}, Received Message: {}", Thread.currentThread().getId(), json);
 
             //Serialize to object
             Order order = objectMapper.readValue(json, Order.class);
-//            LOG.info(order.toString());
+            LOG.info(order.toString());
 
-//            OrderbookImpl orderbookImpl = (OrderbookImpl) orderbook;
             orderbook.processOrder(order);
 
         } catch(Exception e) {
