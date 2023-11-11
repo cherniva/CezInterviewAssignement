@@ -17,8 +17,6 @@ public class OrderbookImpl implements Orderbook {
 
     //TODO: tests
 
-    //TODO: synchronization test
-
     //TODO: add querying for middle price, best price, volume, spread
 
     private static final Logger LOG = LoggerFactory.getLogger(OrderbookImpl.class);
@@ -79,4 +77,30 @@ public class OrderbookImpl implements Orderbook {
         LOG.info("Getting orders for {} {}", product, side);
         return CompletableFuture.completedFuture(getBestOrdersFor(product, side));
     }
+
+    // get best bid and ask for product
+    @Async
+    public Order[] topLevel(String product) {
+        Order topAsk = orderBook.get(product).get(Side.ASK).getRoot().values().iterator().next();
+        Order topBid = orderBook.get(product).get(Side.BID).getRoot().values().iterator().next();
+
+        return new Order[]{topAsk, topBid};
+    }
+
+    // difference between best bid and best ask
+    @Async
+    public double getSpread(String product) { // to avoid call async from another async method
+        Order topAsk = orderBook.get(product).get(Side.ASK).getRoot().values().iterator().next();
+        Order topBid = orderBook.get(product).get(Side.BID).getRoot().values().iterator().next();
+
+        return topAsk.getPrice()-topBid.getPrice();
+    }
+
+    // return map with price as key and number of offers as value
+    @Async
+    public HashMap<Double, Integer> getBookDepth(String product, Side side) {
+        return orderBook.get(product).get(side).getDepth();
+    }
+
+    // volume is a number of completed trades (example: seller sel 1 stock and buyer buy it -> volume of market is 1)
 }

@@ -2,8 +2,10 @@ package cz.cez.trading.algo.interview.shared;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.stream.Collectors;
 
 public class PriceOrderMap {
     private ConcurrentSkipListMap<Double, HashMap<String, Order>> priceOrdersSortedMap;
@@ -33,6 +35,13 @@ public class PriceOrderMap {
         catch(NoSuchElementException e) {
             return new HashMap<>();
         }
+    }
+
+    public HashMap<Double, Integer> getDepth() {
+        HashMap<Double, Integer> depthMap = priceOrdersSortedMap.entrySet().stream()
+                .collect(Collectors.toMap(k -> k.getKey(), v -> v.getValue().size(), (prev, next) -> next, HashMap::new));
+
+        return depthMap;
     }
 
     public Order remove(Order order) {
