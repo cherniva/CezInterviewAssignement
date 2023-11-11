@@ -19,6 +19,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.jms.ConnectionFactory;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
@@ -77,11 +78,6 @@ public class OrderbookConfiguration {
             public void run(String... args) throws Exception {
                 Random random = new Random();
                 while(true) {
-                    try {
-                        Thread.sleep(random.nextInt(100, 4000));
-                    } catch (InterruptedException e) {
-                        LOG.error("Interrupt Exception in CommandLineRunner");
-                    }
 //                    String product = PRODUCTS[random.nextInt(0, 4)];
 //                    Side side = random.nextInt() % 2 == 0 ? Side.ASK : Side.BID;
 
@@ -93,7 +89,9 @@ public class OrderbookConfiguration {
 //                    LOG.info("Orders for {} {} have size: {}", product, side, Arrays.toString(orders.get().toArray()));
 
                     int randomNum = random.nextInt(3,15);
-                    CompletableFuture<Stream<Order>>[] orders = new CompletableFuture[randomNum];
+//                    CompletableFuture<Stream<Order>>[] orders = new CompletableFuture[randomNum];
+                    CompletableFuture<?>[] orders = new CompletableFuture[randomNum];
+
 
                     for(int i = 0; i < randomNum; i++) {
                         try {
@@ -103,15 +101,32 @@ public class OrderbookConfiguration {
                             LOG.error("Interrupt Exception in CommandLineRunner");
                         }
 
-                        orders[i] = orderbook.getBestOrdersForAsync(
-                                PRODUCTS[random.nextInt(0, 4)],
-                                random.nextInt() % 2 == 0 ? Side.ASK : Side.BID
-                        );
+                        String product = PRODUCTS[random.nextInt(0, 4)];
+                        Side side = random.nextInt() % 2 == 0 ? Side.ASK : Side.BID;
+
+                        switch (random.nextInt(1, 5)) {
+                            case 1 -> orders[i] = orderbook.getBestOrdersForAsync(product, side);
+                            case 2 -> orders[i] = orderbook.topLevel(product);
+                            case 3 -> orders[i] = orderbook.getSpread(product);
+                            case 4 -> orders[i] = orderbook.getBookDepth(product, side);
+                        }
                     }
                     CompletableFuture.allOf(orders).join();
 
-                    for(CompletableFuture<Stream<Order>> order : orders) {
-                        LOG.info("--> " + Arrays.toString(order.get().toArray()));
+                    for(CompletableFuture<?> order : orders) {
+                        if(order.get() instanceof Stream<?>) {
+                            LOG.info("Best orders --> " + Arrays.toString(((Stream<?>)order.get()).toArray()));
+                        }
+                        else if(order.get() instanceof Order[]) {
+                            LOG.info("Top level --> " + Arrays.toString((Order[])order.get()));
+                        }
+                        else if(order.get() instanceof Double) {
+                            LOG.info("Spread --> " + order.get());
+                        }
+                        else if(order.get() instanceof HashMap<?, ?>) {
+                            LOG.info("Depth --> " + order.get());
+                        }
+
                     }
                 }
             }
