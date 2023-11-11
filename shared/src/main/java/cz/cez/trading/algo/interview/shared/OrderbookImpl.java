@@ -74,15 +74,17 @@ public class OrderbookImpl implements Orderbook {
         return CompletableFuture.completedFuture(getBestOrdersFor(product, side));
     }
 
+    private Order getTopLevel(String product, Side side) {
+        HashMap<String, Order> root = orderBook.get(product).get(side).getRoot();
+        return root.size() > 0 ? root.values().iterator().next() : null;
+    }
+
     // get best bid and ask for product
     @Async
     public CompletableFuture<Order[]> topLevel(String product) {
         LOG.info("Getting top level for {}", product);
-        Order topAsk, topBid;
-        HashMap<String, Order> askRoot = orderBook.get(product).get(Side.ASK).getRoot();
-        HashMap<String, Order> bidRoot = orderBook.get(product).get(Side.BID).getRoot();
-        topAsk = askRoot == null ? askRoot.values().iterator().next() : null;
-        topBid = bidRoot == null ? bidRoot.values().iterator().next() : null;
+        Order topAsk = getTopLevel(product, Side.ASK);
+        Order topBid = getTopLevel(product, Side.BID);
 
         return CompletableFuture.completedFuture(new Order[]{topAsk, topBid});
     }
@@ -91,12 +93,8 @@ public class OrderbookImpl implements Orderbook {
     @Async
     public CompletableFuture<Double> getSpread(String product) { // to avoid call async from another async method
         LOG.info("Getting spread for {}", product);
-
-        Order topAsk, topBid;
-        HashMap<String, Order> askRoot = orderBook.get(product).get(Side.ASK).getRoot();
-        HashMap<String, Order> bidRoot = orderBook.get(product).get(Side.BID).getRoot();
-        topAsk = askRoot == null ? askRoot.values().iterator().next() : null;
-        topBid = bidRoot == null ? bidRoot.values().iterator().next() : null;
+        Order topAsk = getTopLevel(product, Side.ASK);
+        Order topBid = getTopLevel(product, Side.BID);
 
         if(topAsk == null || topBid == null)
             return CompletableFuture.completedFuture(-1.0);
