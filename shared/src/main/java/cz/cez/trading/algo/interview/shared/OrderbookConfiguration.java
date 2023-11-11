@@ -78,10 +78,12 @@ public class OrderbookConfiguration {
             public void run(String... args) throws Exception {
                 Random random = new Random();
                 while(true) {
-                    int randomNum = random.nextInt(3,15);
-                    CompletableFuture<?>[] orders = new CompletableFuture[randomNum];
+                    int numOfClients = random.nextInt(3,15);
+                    CompletableFuture<?>[] orders = new CompletableFuture[numOfClients];
+                    String[] products = new String[numOfClients];
+                    Side[] sides = new Side[numOfClients];
 
-                    for(int i = 0; i < randomNum; i++) {
+                    for(int i = 0; i < numOfClients; i++) {
                         try {
                             Thread.sleep(random.nextInt(10, 2000));
                         }
@@ -98,21 +100,33 @@ public class OrderbookConfiguration {
                             case 3 -> orders[i] = orderbook.getSpread(product);
                             case 4 -> orders[i] = orderbook.getBookDepth(product, side);
                         }
+                        products[i] = product;
+                        sides[i] = side;
                     }
                     CompletableFuture.allOf(orders).join();
 
-                    for(CompletableFuture<?> order : orders) {
-                        if(order.get() instanceof Stream<?>) {
-                            LOG.info("Best orders --> " + Arrays.toString(((Stream<?>)order.get()).toArray()));
+                    for(int i = 0; i < numOfClients; i++) {
+                        if(orders[i].get() instanceof Stream<?>) {
+                            LOG.info("Best orders for {} {} --> {}",
+                                    products[i],
+                                    sides[i],
+                                    Arrays.toString(((Stream<?>)orders[i].get()).toArray()));
                         }
-                        else if(order.get() instanceof Order[]) {
-                            LOG.info("Top level --> " + Arrays.toString((Order[])order.get()));
+                        else if(orders[i].get() instanceof Order[]) {
+                            LOG.info("Top level of {} --> {}",
+                                    products[i],
+                                    Arrays.toString((Order[])orders[i].get()));
                         }
-                        else if(order.get() instanceof Double) {
-                            LOG.info("Spread --> " + order.get());
+                        else if(orders[i].get() instanceof Double) {
+                            LOG.info("Spread of {} --> {}",
+                                    products[i],
+                                    orders[i].get());
                         }
-                        else if(order.get() instanceof HashMap<?, ?>) {
-                            LOG.info("Depth --> " + order.get());
+                        else if(orders[i].get() instanceof HashMap<?, ?>) {
+                            LOG.info("Depth of {} {} --> {}",
+                                    products[i],
+                                    sides[i],
+                                    orders[i].get());
                         }
 
                     }
