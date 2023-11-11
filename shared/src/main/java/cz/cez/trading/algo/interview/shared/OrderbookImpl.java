@@ -15,10 +15,6 @@ import java.util.stream.Stream;
 @Component
 public class OrderbookImpl implements Orderbook {
 
-    //TODO: tests
-
-    //TODO: add querying for middle price, best price, volume, spread
-
     private static final Logger LOG = LoggerFactory.getLogger(OrderbookImpl.class);
 
     private HashMap<String, HashMap<Side, PriceOrderMap>> orderBook;
