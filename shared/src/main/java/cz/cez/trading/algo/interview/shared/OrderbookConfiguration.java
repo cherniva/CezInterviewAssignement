@@ -78,20 +78,8 @@ public class OrderbookConfiguration {
             public void run(String... args) throws Exception {
                 Random random = new Random();
                 while(true) {
-//                    String product = PRODUCTS[random.nextInt(0, 4)];
-//                    Side side = random.nextInt() % 2 == 0 ? Side.ASK : Side.BID;
-
-//                    Stream<Order> orders = orderbook.getBestOrdersFor(product, side);
-//                    LOG.info("Orders for {} {} have size: {}", product, side, Arrays.toString(orders.toArray()));
-
-//                    CompletableFuture<Stream<Order>> orders = orderbook.getBestOrdersForAsync(product, side);
-//                    CompletableFuture.allOf(orders).join();
-//                    LOG.info("Orders for {} {} have size: {}", product, side, Arrays.toString(orders.get().toArray()));
-
                     int randomNum = random.nextInt(3,15);
-//                    CompletableFuture<Stream<Order>>[] orders = new CompletableFuture[randomNum];
                     CompletableFuture<?>[] orders = new CompletableFuture[randomNum];
-
 
                     for(int i = 0; i < randomNum; i++) {
                         try {
