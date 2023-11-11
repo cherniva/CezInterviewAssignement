@@ -209,4 +209,54 @@ class OrderbookImplTest {
             assertThrows(NoSuchElementException.class, () -> orderBook.getBestOrdersFor(order.getProduct(), order.getSide()));
         }
     }
+
+    @org.junit.jupiter.api.Test
+    void orderbookGetDepthSamePriceTest() {
+        String product = PRODUCTS[0];
+        Side side = ASK;
+        int quantity = 10;
+        double price = 100.1;
+        Operation operation = SET;
+
+        Order order1 = new Order("1", product, side, quantity, price, operation);
+        Order order2 = new Order("2", product, side, quantity, price, operation);
+        Order order3 = new Order("3", product, side, quantity, price, operation);
+
+        orderBook.processOrder(order1);
+        orderBook.processOrder(order2);
+        orderBook.processOrder(order3);
+
+        HashMap<Double, Integer> expectedDepthMap = new HashMap<>();
+        expectedDepthMap.put(price, 3);
+
+        assertEquals(expectedDepthMap, orderBook.getBookDepth(product, side));
+    }
+
+    @org.junit.jupiter.api.Test
+    void orderbookGetDepthTest() {
+        String product = PRODUCTS[0];
+        Side side = ASK;
+        int quantity = 10;
+        double price1 = 100.1;
+        double price2 = 100.075;
+        Operation operation = SET;
+
+        Order order1 = new Order("1", product, side, quantity, price1, operation);
+        Order order2 = new Order("2", product, side, quantity, price1, operation);
+        Order order3 = new Order("3", product, side, quantity, price1, operation);
+        Order order4 = new Order("4", product, side, quantity, price2, operation);
+        Order order5 = new Order("5", product, side, quantity, price2, operation);
+
+        orderBook.processOrder(order1);
+        orderBook.processOrder(order2);
+        orderBook.processOrder(order3);
+        orderBook.processOrder(order4);
+        orderBook.processOrder(order5);
+
+        HashMap<Double, Integer> expectedDepthMap = new HashMap<>();
+        expectedDepthMap.put(price1, 3);
+        expectedDepthMap.put(price2, 2);
+
+        assertEquals(expectedDepthMap, orderBook.getBookDepth(product, side));
+    }
 }
