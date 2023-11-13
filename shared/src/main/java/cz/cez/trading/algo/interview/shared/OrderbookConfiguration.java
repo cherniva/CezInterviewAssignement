@@ -32,8 +32,6 @@ import java.util.stream.Stream;
 @EnableJms
 public class OrderbookConfiguration {
 
-    private int uselessInt;
-
     private static final Logger LOG = LoggerFactory.getLogger(OrderbookConfiguration.class);
 
     private static final String[] PRODUCTS = new String[]{"ttf-jan-2023", "ttf-feb-2023", "ttf-mar-2023", "ttf-apr-2023"};
